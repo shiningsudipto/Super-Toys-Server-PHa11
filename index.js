@@ -32,6 +32,20 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
+        const indexKeys = { name: 1 };
+        const indexOptions = { name: "toyName" };
+        const result = await toyCollection.createIndex(indexKeys, indexOptions);
+
+        app.get('/toysName/:text', async (req, res) => {
+            const searchText = req.params.text;
+            const result = await toyCollection.find({
+                $or: [
+                    { name: { $regex: searchText, $options: "i" } }
+                ]
+            }).limit(20).toArray();
+            res.send(result);
+        })
+
         app.get('/toys', async (req, res) => {
             const cursor = toyCollection.find().limit(20);
             const result = await cursor.toArray();
