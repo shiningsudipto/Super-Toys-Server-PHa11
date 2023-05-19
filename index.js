@@ -71,6 +71,15 @@ async function run() {
             const result = await toyCollection.insertOne(newToy);
             res.send(result)
         })
+        // delete data
+        app.delete('/toys/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log({ id });
+            const query = { _id: new ObjectId(id) }
+            const result = await toyCollection.deleteOne(query);
+            res.send(result);
+        })
+
         // getting data by category
         app.get('/toys/:category', async (req, res) => {
             const { category } = req.params;
