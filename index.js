@@ -67,14 +67,28 @@ async function run() {
         // adding new toy
         app.post('/toys', async (req, res) => {
             const newToy = req.body;
-            console.log(newToy);
             const result = await toyCollection.insertOne(newToy);
+            res.send(result)
+        })
+        // update data
+        app.put('/toys/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true };
+            const updatedToy = req.body;
+            const toys = {
+                $set: {
+                    price: updatedToy.price,
+                    availableQuantity: updatedToy.availableQuantity,
+                    description: updatedToy?.description,
+                }
+            }
+            const result = await toyCollection.updateOne(filter, toys, options)
             res.send(result)
         })
         // delete data
         app.delete('/toys/:id', async (req, res) => {
             const id = req.params.id;
-            console.log({ id });
             const query = { _id: new ObjectId(id) }
             const result = await toyCollection.deleteOne(query);
             res.send(result);
@@ -91,7 +105,6 @@ async function run() {
         // getting data by id
         app.get('/toy/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(id);
             const query = { _id: new ObjectId(id) };
             const result = await toyCollection.findOne(query);
             res.send(result);
