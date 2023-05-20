@@ -47,7 +47,7 @@ async function run() {
         })
         // getting all data
         app.get('/toys', async (req, res) => {
-            const cursor = toyCollection.find().sort({ price: 1 }).limit(20);
+            const cursor = toyCollection.find().limit(20);
             const result = await cursor.toArray();
             res.json(result)
         })
@@ -59,7 +59,7 @@ async function run() {
                     sellerEmail: req.query.email
                 }
             }
-            const result = await toyCollection.find(query).toArray();
+            const result = await toyCollection.find(query).sort({ price: 1 }).toArray();
             res.json(result);
         })
         // adding new toy
