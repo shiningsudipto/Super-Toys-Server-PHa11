@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -14,8 +14,8 @@ app.get('/', (req, res) => {
 })
 
 
-
-const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.SECRET_KEY}@cluster0.kh5m3gl.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb://${process.env.USER_NAME}:${process.env.SECRET_KEY}@ac-eh9wica-shard-00-00.kh5m3gl.mongodb.net:27017,ac-eh9wica-shard-00-01.kh5m3gl.mongodb.net:27017,ac-eh9wica-shard-00-02.kh5m3gl.mongodb.net:27017/?ssl=true&replicaSet=atlas-ixs7p9-shard-0&authSource=admin&retryWrites=true&w=majority`
+// const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.SECRET_KEY}@cluster0.kh5m3gl.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -30,12 +30,12 @@ async function run() {
     try {
         const toyCollection = client.db('superToys').collection('toys')
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         // searching data with name field
-        const indexKeys = { name: 1 };
-        const indexOptions = { name: "toyName" };
-        const result = await toyCollection.createIndex(indexKeys, indexOptions);
+        // const indexKeys = { name: 1 };
+        // const indexOptions = { name: "toyName" };
+        // const result = await toyCollection.createIndex(indexKeys, indexOptions);
         app.get('/toysName/:text', async (req, res) => {
             const searchText = req.params.text;
             const result = await toyCollection.find({
@@ -43,32 +43,30 @@ async function run() {
                     { name: { $regex: searchText, $options: "i" } }
                 ]
             }).limit(20).toArray();
-            res.send(result);
+            res.json(result);
         })
         // getting all data
         app.get('/toys', async (req, res) => {
-            const cursor = toyCollection.find().limit(20);
+            const cursor = toyCollection.find().sort({ price: 1 }).limit(20);
             const result = await cursor.toArray();
-            res.send(result)
+            res.json(result)
         })
         // getting data by email: http://localhost:5000/toysBy?email=ssudiptait@gmail.com
         app.get('/toysBy', async (req, res) => {
             let query = {}
-            console.log(query);
             if (req.query?.email) {
                 query = {
                     sellerEmail: req.query.email
                 }
-                console.log(query);
             }
             const result = await toyCollection.find(query).toArray();
-            res.send(result);
+            res.json(result);
         })
         // adding new toy
         app.post('/toys', async (req, res) => {
             const newToy = req.body;
             const result = await toyCollection.insertOne(newToy);
-            res.send(result)
+            res.json(result)
         })
         // update data
         app.put('/toys/:id', async (req, res) => {
@@ -84,14 +82,14 @@ async function run() {
                 }
             }
             const result = await toyCollection.updateOne(filter, toys, options)
-            res.send(result)
+            res.json(result)
         })
         // delete data
         app.delete('/toys/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await toyCollection.deleteOne(query);
-            res.send(result);
+            res.json(result);
         })
 
         // getting data by category
@@ -100,14 +98,14 @@ async function run() {
             const query = { category };
             const cursor = toyCollection.find(query).project({ name: 1, pictureUrl: 1, price: 1, rating: 1 });
             const result = await cursor.toArray();
-            res.send(result);
+            res.json(result);
         });
         // getting data by id
         app.get('/toy/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await toyCollection.findOne(query);
-            res.send(result);
+            res.json(result);
         })
 
         // Send a ping to confirm a successful connection
