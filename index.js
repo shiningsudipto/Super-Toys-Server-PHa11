@@ -52,16 +52,33 @@ async function run() {
             res.json(result)
         })
         // getting data by email: http://localhost:5000/toysBy?email=ssudiptait@gmail.com
+        // app.get('/toysBy', async (req, res) => {
+        //     let query = {}
+        //     if (req.query?.email) {
+        //         query = {
+        //             sellerEmail: req.query.email
+        //         }
+        //     }
+        //     const result = await toyCollection.find(query).sort({ price: 1 }).toArray();
+        //     res.json(result);
+        // })
+        // getting data by email and toggling asce desce by price
         app.get('/toysBy', async (req, res) => {
-            let query = {}
+            let query = {};
             if (req.query?.email) {
                 query = {
                     sellerEmail: req.query.email
-                }
+                };
             }
-            const result = await toyCollection.find(query).sort({ price: 1 }).toArray();
+            let sortQuery = { price: 1 }; // Default sorting query (ascending order)
+            if (req.query.sort === 'desc') {
+                sortQuery = { price: -1 }; // If 'sort' query parameter is 'desc', change sorting query to descending order
+            }
+            const result = await toyCollection.find(query).sort(sortQuery).toArray();
             res.json(result);
-        })
+        });
+
+
         // adding new toy
         app.post('/toys', async (req, res) => {
             const newToy = req.body;
